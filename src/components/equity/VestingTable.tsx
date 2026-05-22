@@ -177,7 +177,6 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                             ? row.grantEvents[0].grant.label
                             : `${grantCount} grants`}
                         </span>
-                        <span className="text-tertiary shrink-0">· {row.total.shares.toLocaleString()} shares</span>
                       </div>
                       <motion.svg
                         width="16" height="16" viewBox="0 0 24 24" fill="none"
