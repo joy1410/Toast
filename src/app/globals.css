@@ -1,26 +1,25 @@
 @import "tailwindcss";
+@import "./tokens.generated.css";
+
+/*
+ * globals.css — layout and base styles only.
+ * All design token values live in Toast_tokens/ and are generated into
+ * tokens.generated.css by `npm run tokens` (also runs on predev / prebuild).
+ * Do NOT add hardcoded color / spacing / shadow values here.
+ */
 
 :root {
   --background: #ffffff;
-  --foreground: #171717;
+  --foreground: var(--color-ink);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+/* Source Sans utility — references the Next.js font CSS var set in layout.tsx */
+@utility font-ui {
+  font-family: var(--font-source-sans, sans-serif);
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-source-sans, sans-serif);
 }

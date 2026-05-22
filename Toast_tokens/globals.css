@@ -1,0 +1,77 @@
+@import "tailwindcss";
+@config "../../tailwind.config.js";
+
+/*
+ * ─── CSS Custom Properties ───────────────────────────────────────────────────
+ * Color values reference Tailwind-generated CSS variables from palette.ts.
+ * Variable naming: --color-{key}-{stop}, e.g. --color-gray-0, --color-cool-gray-90
+ *
+ * Three font family CSS variables are declared here as placeholders.
+ * See typography.ts for the full usage pattern.
+ *
+ * HOW TO UPDATE WHEN FONT FILES ARE ADDED:
+ *   Option A — next/font/local (recommended):
+ *     Uncomment the three localFont blocks in src/app/layout.tsx.
+ *     Each block assigns a CSS variable that matches the names below.
+ *     No changes needed in this file after that.
+ *
+ *   Option B — @font-face in this file:
+ *     Add @font-face blocks below with:
+ *       font-family: 'Effra'          → src/fonts/Effra-Regular.woff2
+ *       font-family: 'Effra Medium'   → src/fonts/Effra-Medium.woff2
+ *       font-family: 'Source Sans Pro'→ src/fonts/SourceSansPro-Regular/SemiBold/Bold.woff2
+ *     No other changes needed — the names below already match.
+ */
+
+:root {
+  /* Surface & content defaults */
+  /* gray-0 (#F7F7F7) — color-surface-dim / page background */
+  --background: var(--color-gray-0);
+  /* gray-125 (#252525) — color-text-default */
+  --foreground: var(--color-gray-125);
+
+  /*
+   * Font family placeholders — three files total:
+   *   --font-heading        → Effra Regular  (Figma: Font = "Effra")
+   *   --font-heading-medium → Effra Medium   (Figma: Font = "Effra Medium")
+   *   --font-sans           → Source Sans Pro
+   *
+   * Both Effra variants use font-weight: 400. They differ by font-family name only.
+   */
+  --font-heading:        'Effra', Georgia, serif;
+  --font-heading-medium: 'Effra Medium', Georgia, serif;
+  --font-sans:           'Source Sans Pro', system-ui, -apple-system, sans-serif;
+}
+
+/* Dark-mode overrides — activated by class="dark" on <html> */
+.dark {
+  /* cool-gray-90 (#131419) — color-surface-dim dark */
+  --background: var(--color-cool-gray-90);
+  /* gray-white (#FFFFFF) — color-text-default-inverse */
+  --foreground: var(--color-gray-white);
+}
+
+@theme inline {
+  --color-background:    var(--background);
+  --color-foreground:    var(--foreground);
+  --font-heading:        var(--font-heading);
+  --font-heading-medium: var(--font-heading-medium);
+  --font-sans:           var(--font-sans);
+}
+
+/* Base body styles */
+body {
+  background-color: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans);
+  font-size: 1rem;      /* text-default: 16px */
+  line-height: 1.5rem;  /* text-default line-height: 24px */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Heading elements default to Effra — font-weight 400 per Figma (Regular/Medium = 400) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading);
+  font-weight: 400;
+}

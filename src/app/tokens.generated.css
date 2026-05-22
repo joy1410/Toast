@@ -1,0 +1,87 @@
+/* ============================================================
+ * AUTO-GENERATED — DO NOT EDIT
+ * Source:      Toast_tokens/  →  scripts/build-tokens.ts
+ * Regenerate:  npm run tokens
+ * ============================================================ */
+
+@theme {
+  /* Gray palette — palette.ts › gray */
+  --color-gray-white: #FFFFFF;
+  --color-gray-0: #F7F7F7;
+  --color-gray-25: #F0F0F0;
+  --color-gray-30: #E5E5E5;
+  --color-gray-50: #C0C0C0;
+  --color-gray-75: #7A7A7A;
+  --color-gray-100: #666666;
+  --color-gray-110: #474747;
+  --color-gray-125: #252525;
+
+  /* Opacity-black — palette.ts › opacityBlack */
+  --color-black-4: rgba(0,0,0,0.04);
+  --color-black-8: rgba(0,0,0,0.08);
+  --color-black-12: rgba(0,0,0,0.12);
+  --color-black-56: rgba(0,0,0,0.56);
+  --color-black-80: rgba(0,0,0,0.80);
+
+  /* Primary palette — palette.ts › orange, blue */
+  --color-orange-50: #FF4C00;
+  --color-blue-0: #E7EAF6;
+  --color-blue-75: #2B4FB9;
+
+  /* Semantic text — colors.ts › textColors */
+  --color-ink: #252525;
+  --color-secondary: #666666;
+  --color-tertiary: #616161;
+  --color-muted: #999999;
+  --color-action: #2B4FB9;
+  --color-brand: #FF4C00;
+
+  /* Semantic borders — colors.ts › borderColors */
+  --color-border: rgba(0,0,0,0.12);
+  --color-border-subtle: rgba(0,0,0,0.08);
+  --color-border-mid: #C0C0C0;
+  --color-border-strong: rgba(0,0,0,0.56);
+  --color-border-grid: #ebebeb;
+
+  /* Semantic surfaces — colors.ts › backgroundColors + surfaceColors */
+  --color-background: #ffffff;
+  --color-surface-card: rgba(0,0,0,0.04);
+  --color-surface-badge: #F0F0F0;
+  --color-surface-base: #f0f0f2;
+  --color-surface-muted: #F7F7F7;
+  --color-surface-control: #E5E5E5;
+  --color-surface-selected: #f5f5f5;
+  --color-surface-neutral: #888888;
+
+  /* Tooltip surfaces */
+  --color-tooltip: rgba(0,0,0,0.82);
+  --color-tooltip-chart: rgba(0,0,0,0.78);
+  --color-tooltip-muted: rgba(255,255,255,0.70);
+
+  /* Custom border radius — radii.ts */
+  --radius-inner: 0.625rem;
+
+  /* Elevation shadows — shadows.ts */
+  --shadow-card: 0 1px 4px -1px rgba(0,0,0,0.08), 0 1px 2px -1px rgba(0,0,0,0.06);
+  --shadow-dropdown: 0 4px 8px -2px rgba(0,0,0,0.12), 0 2px 4px -2px rgba(0,0,0,0.08);
+  --shadow-toggle: 0 1px 5px rgba(0,0,0,0.04), 0 2px 2px rgba(0,0,0,0.06), 0 3px 1px -2px rgba(0,0,0,0.09);
+
+  /* Custom font sizes — typography.ts (non-standard) */
+  --text-chip: 0.625rem;
+  --text-caption-sm: 0.6875rem;
+  --text-label-sm: 0.8125rem;
+  --text-value: 0.9375rem;
+
+  /* Letter-spacing — typography.ts › letterSpacing */
+  --tracking-ui: 0.0125rem;
+  --tracking-badge: 0.05rem;
+  --tracking-badge-sm: 0.0375rem;
+  --tracking-chip: 0.01875rem;
+  --tracking-overline: 0.075rem;
+
+  /* Font families — typography.ts › fontFamily */
+  --font-ui: var(--font-source-sans, 'Source Sans Pro', system-ui, sans-serif);
+  --font-heading: var(--font-source-sans, 'Effra', Georgia, serif);
+  --font-heading-medium: var(--font-source-sans, 'Effra Medium', Georgia, serif);
+
+}
