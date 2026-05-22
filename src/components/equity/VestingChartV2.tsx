@@ -128,36 +128,6 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
         )
       })}
 
-      {/* ── TODAY vertical line ─────────────────────────────────────────────── */}
-      {todayBarIdx >= 0 && (
-        <div
-          className="absolute pointer-events-none"
-          style={{
-            left: LABEL_W + todayBarIdx * slotW + barOff + barW / 2,
-            top: CHART_PAD,
-            width: 1.5,
-            height: CHART_H,
-            background: 'var(--color-ink)',
-            transform: 'translateX(-50%)',
-          }}
-        />
-      )}
-
-      {/* ── TODAY chip ──────────────────────────────────────────────────────── */}
-      {todayBarIdx >= 0 && (
-        <div
-          className="absolute pointer-events-none whitespace-nowrap font-ui bg-ink text-background text-chip font-semibold tracking-chip rounded-full flex items-center leading-none"
-          style={{
-            left: LABEL_W + todayBarIdx * slotW + barOff + barW / 2,
-            top: CHART_PAD - 16,
-            transform: 'translateX(-50%)',
-            padding: '3px 8px',
-          }}
-        >
-          TODAY
-        </div>
-      )}
-
       {/* ── Bars + labels (animated as a unit) ──────────────────────────────── */}
       <AnimatePresence mode="wait">
         <motion.div
@@ -215,6 +185,36 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
               </div>
             ))}
           </div>
+
+          {/* TODAY vertical line — inside bars container so it paints over animated segments */}
+          {todayBarIdx >= 0 && (
+            <div
+              className="absolute pointer-events-none"
+              style={{
+                left: todayBarIdx * slotW + barOff + barW / 2,
+                top: 0,
+                width: 1.5,
+                height: CHART_H,
+                background: 'var(--color-ink)',
+                transform: 'translateX(-50%)',
+              }}
+            />
+          )}
+
+          {/* TODAY chip — inside bars container, above the line */}
+          {todayBarIdx >= 0 && (
+            <div
+              className="absolute pointer-events-none whitespace-nowrap font-ui bg-ink text-background text-chip font-semibold tracking-chip rounded-full flex items-center leading-none"
+              style={{
+                left: todayBarIdx * slotW + barOff + barW / 2,
+                top: -16,
+                transform: 'translateX(-50%)',
+                padding: '3px 8px',
+              }}
+            >
+              TODAY
+            </div>
+          )}
 
           {/* X-axis labels */}
           <div className="flex" style={{ height: 28 }}>

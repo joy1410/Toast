@@ -325,10 +325,21 @@ export function EquityCard() {
                         <rect width="16" height="16" rx="3" fill="url(#sum-stripe)" />
                       </svg>
                       <span className="text-sm text-tertiary">Vested</span>
-                      <span className="text-value font-semibold text-ink">{fmtMoney(Math.round(periodVestedValue))}</span>
-                      <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
-                        {periodVestedShares.toLocaleString()} shares
-                      </span>
+                      {displayMode === 'shares' ? (
+                        <>
+                          <span className="text-value font-semibold text-ink">{periodVestedShares.toLocaleString()} shares</span>
+                          <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
+                            {fmtMoney(Math.round(periodVestedValue))}
+                          </span>
+                        </>
+                      ) : (
+                        <>
+                          <span className="text-value font-semibold text-ink">{fmtMoney(Math.round(periodVestedValue))}</span>
+                          <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
+                            {periodVestedShares.toLocaleString()} shares
+                          </span>
+                        </>
+                      )}
                     </motion.div>
                   )}
                 </AnimatePresence>
@@ -361,10 +372,21 @@ export function EquityCard() {
                     )}
                   </AnimatePresence>
                   <span className="text-sm text-tertiary">Unvested</span>
-                  <span className="text-value font-semibold text-ink">{fmtMoney(Math.round(periodUnvestedValue))}</span>
-                  <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
-                    {periodUnvestedShares.toLocaleString()} shares
-                  </span>
+                  {displayMode === 'shares' ? (
+                    <>
+                      <span className="text-value font-semibold text-ink">{periodUnvestedShares.toLocaleString()} shares</span>
+                      <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
+                        {fmtMoney(Math.round(periodUnvestedValue))}
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="text-value font-semibold text-ink">{fmtMoney(Math.round(periodUnvestedValue))}</span>
+                      <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
+                        {periodUnvestedShares.toLocaleString()} shares
+                      </span>
+                    </>
+                  )}
                 </motion.div>
               </div>
 
