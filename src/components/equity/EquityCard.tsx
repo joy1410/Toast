@@ -102,11 +102,11 @@ export function EquityCard() {
       <p className="text-base font-semibold text-ink leading-6 mb-4 m-0">Your equity rewards</p>
 
       {/* Summary cards */}
-      <div className="flex gap-2.5 mb-2">
+      <div className="grid gap-2.5 mb-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min-content, 1fr))' }}>
         {summaryCards.map(card => (
           <div
             key={card.label}
-            className="flex-1 bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-6"
+            className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-6"
           >
             <p className="text-base font-normal text-ink leading-6 m-0">{card.label}</p>
             <div className="flex items-center gap-2">
