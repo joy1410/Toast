@@ -1,19 +1,22 @@
 'use client'
-import React, { useState } from 'react'
-import { motion } from 'framer-motion'
-import { GRANTS, VestingEvent, TODAY, fmtDate, fmtMoney } from './equityData'
+import React, { useState, useRef, useEffect } from 'react'
+import { motion, AnimatePresence } from 'framer-motion'
+import { GRANTS, VestingEvent, TODAY, fmtDate, fmtMoney, quarterLabel } from './equityData'
 
 interface Props {
   events: VestingEvent[]
   sharePrice: number
   defaultStart: Date
   defaultEnd: Date
+  scrollToQuarter?: string | null
+  scrollNonce?: number
 }
 
 interface TableRow {
   date: Date
   dateKey: string
-  perGrant: Record<string, VestingEvent | undefined>
+  quarter: string
+  grantEvents: { grant: typeof GRANTS[0]; event: VestingEvent }[]
   total: { shares: number; value: number }
   isVested: boolean
   isTodayBoundary?: boolean
@@ -31,16 +34,16 @@ function buildRows(events: VestingEvent[], sharePrice: number, start: Date, end:
   for (const [key, evts] of dateMap) {
     const d = evts[0].date
     if (d < start || d > end) continue
-    const perGrant: Record<string, VestingEvent | undefined> = {}
     let totalShares = 0
-    for (const e of evts) {
-      perGrant[e.grantId] = e
-      totalShares += e.shares
-    }
+    const grantEvents = evts
+      .map(e => ({ grant: GRANTS.find(g => g.id === e.grantId)!, event: e }))
+      .filter(x => x.grant)
+    grantEvents.forEach(x => { totalShares += x.event.shares })
     rows.push({
       date: d,
       dateKey: key,
-      perGrant,
+      quarter: quarterLabel(d),
+      grantEvents,
       total: { shares: totalShares, value: totalShares * sharePrice },
       isVested: d <= TODAY,
     })
@@ -56,95 +59,200 @@ function buildRows(events: VestingEvent[], sharePrice: number, start: Date, end:
   return rows
 }
 
-export function VestingTable({ events, sharePrice, defaultStart, defaultEnd }: Props) {
+export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scrollToQuarter, scrollNonce = 0 }: Props) {
   const [showAll, setShowAll] = useState(false)
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map())
 
   const allRowsInPeriod = buildRows(events, sharePrice, defaultStart, defaultEnd)
-  const allRowsFull = buildRows(events, sharePrice, defaultStart, new Date(8640000000000000))
-  const visibleRows = showAll ? allRowsFull : allRowsInPeriod
+  const allRowsFull     = buildRows(events, sharePrice, defaultStart, new Date(8640000000000000))
+  const visibleRows     = showAll ? allRowsFull : allRowsInPeriod
+
+  // Scroll to quarter when chart bar is clicked
+  useEffect(() => {
+    if (!scrollToQuarter) return
+    // If the quarter isn't in the default window, expand to show all rows first
+    const inDefault = allRowsInPeriod.some(r => r.quarter === scrollToQuarter)
+    if (!inDefault) setShowAll(true)
+  }, [scrollToQuarter, scrollNonce])
+
+  useEffect(() => {
+    if (!scrollToQuarter) return
+    const rows = showAll ? allRowsFull : allRowsInPeriod
+    const row = rows.find(r => r.quarter === scrollToQuarter)
+    if (!row) return
+    // Wait one frame for showAll to re-render before scrolling
+    requestAnimationFrame(() => {
+      const el = rowRefs.current.get(row.dateKey)
+      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    })
+  }, [scrollToQuarter, scrollNonce, showAll])
+
+  function toggleRow(dateKey: string) {
+    setExpandedRows(prev => {
+      const next = new Set(prev)
+      next.has(dateKey) ? next.delete(dateKey) : next.add(dateKey)
+      return next
+    })
+  }
 
   return (
     <div className="w-full font-ui">
-      {/* table-fixed is a Tailwind utility; col widths % set via inline since they're computed proportions */}
       <table className="w-full border-collapse text-sm table-fixed">
         <colgroup>
-          <col style={{ width: '9%' }} />
-          {/* column width is computed from GRANTS.length — dynamic inline required */}
-          {GRANTS.map(g => <col key={g.id} style={{ width: `${62 / GRANTS.length}%` }} />)}
+          <col style={{ width: '12%' }} />
+          <col style={{ width: '18%' }} />
+          <col style={{ width: '34%' }} />
+          <col style={{ width: '22%' }} />
           <col style={{ width: '14%' }} />
-          <col style={{ width: '8%' }} />
         </colgroup>
 
         <thead>
           <tr className="bg-surface-muted border-b border-border">
-            <th className="px-2 py-2 text-left font-normal">
-              <span className="font-semibold text-ink">Vesting date</span>
-            </th>
-            {GRANTS.map(g => (
-              <th key={g.id} className="px-2 py-2 text-left font-normal">
-                <div className="font-semibold text-ink leading-5 whitespace-nowrap overflow-hidden text-ellipsis">{g.label}</div>
-                {/* text-xs = 12px caption size from typography.ts */}
-                <div className="font-normal text-xs text-tertiary leading-4 whitespace-nowrap">Granted {fmtDate(g.grantedDate)}</div>
-              </th>
-            ))}
-            <th className="px-2 py-2 text-left font-normal">
-              <span className="font-semibold text-ink">Total vesting</span>
-            </th>
-            <th className="px-2 py-2 text-left font-normal">
-              <span className="font-semibold text-ink">Status</span>
-            </th>
+            <th className="pl-4 pr-2 py-2 text-left font-semibold text-ink">Quarter</th>
+            <th className="px-2 py-2 text-left font-semibold text-ink">Vesting date</th>
+            <th className="pl-2 pr-5 py-2 text-left font-semibold text-ink">Grants vested</th>
+            <th className="px-2 py-2 text-left font-semibold text-ink">Total vesting</th>
+            <th className="px-2 py-2 text-left font-semibold text-ink">Status</th>
           </tr>
         </thead>
 
         <tbody>
-          {visibleRows.map((row) => (
-            <React.Fragment key={row.dateKey}>
-              {row.isTodayBoundary && (
-                <tr>
-                  <td colSpan={GRANTS.length + 3} className="p-0">
-                    <div className="relative h-px bg-ink">
-                      {/* chip: text-chip=10px, tracking-chip=0.3px, rounded-full, bg-ink, text-background */}
-                      <span className="absolute left-4 -top-[9px] bg-ink text-background text-chip font-semibold px-2 rounded-full tracking-chip flex items-center leading-none" style={{ paddingTop: '3px', paddingBottom: '3px' }}>
-                        TODAY
-                      </span>
+          {visibleRows.map((row) => {
+            const isExpanded = expandedRows.has(row.dateKey)
+            const grantCount = row.grantEvents.length
+
+            return (
+              <React.Fragment key={row.dateKey}>
+                {/* TODAY boundary */}
+                {row.isTodayBoundary && (
+                  <tr>
+                    <td colSpan={5} className="p-0">
+                      <div className="relative h-px bg-ink">
+                        <span
+                          className="absolute left-4 -top-[9px] bg-ink text-background text-chip font-semibold px-2 rounded-full tracking-chip flex items-center leading-none"
+                          style={{ paddingTop: '3px', paddingBottom: '3px' }}
+                        >
+                          TODAY
+                        </span>
+                      </div>
+                    </td>
+                  </tr>
+                )}
+
+                {/* Main row — highlighted when expanded */}
+                <tr
+                  ref={el => { if (el) rowRefs.current.set(row.dateKey, el) }}
+                  className={`border-b border-border-subtle cursor-pointer transition-colors ${isExpanded ? 'bg-surface-muted' : 'hover:bg-surface-muted'}`}
+                  onClick={() => toggleRow(row.dateKey)}
+                >
+                  {/* Quarter */}
+                  <td className="pl-4 pr-2 py-2.5 align-middle">
+                    <span className="text-ink">{row.quarter}</span>
+                  </td>
+
+                  {/* Vesting date */}
+                  <td className="px-2 py-2.5 align-middle">
+                    <span className="font-semibold text-ink">{fmtDate(row.date)}</span>
+                  </td>
+
+                  {/* Grants summary */}
+                  <td className="pl-2 pr-5 py-2.5 align-middle">
+                    <div className="flex items-center justify-between gap-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        {/* Color circles — hidden when expanded */}
+                        {!isExpanded && (
+                          <div className="flex gap-1 shrink-0">
+                            {row.grantEvents.map(({ grant }) => (
+                              <span
+                                key={grant.id}
+                                className="w-2.5 h-2.5 rounded-full shrink-0"
+                                style={{ background: grant.color }}
+                              />
+                            ))}
+                          </div>
+                        )}
+                        <span className="text-ink truncate">
+                          {grantCount === 1
+                            ? row.grantEvents[0].grant.label
+                            : `${grantCount} grants`}
+                        </span>
+                        <span className="text-tertiary shrink-0">· {row.total.shares.toLocaleString()} shares</span>
+                      </div>
+                      <motion.svg
+                        width="16" height="16" viewBox="0 0 24 24" fill="none"
+                        className="shrink-0"
+                        animate={{ rotate: isExpanded ? 180 : 0 }}
+                        transition={{ duration: 0.2 }}
+                      >
+                        <path d="M7 10l5 5 5-5" stroke="var(--color-secondary)" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" />
+                      </motion.svg>
                     </div>
                   </td>
+
+                  {/* Total vesting */}
+                  <td className="px-2 py-2.5 align-middle">
+                    <span className="font-semibold text-ink">{fmtMoney(Math.round(row.total.value))}</span>
+                    <span className="text-tertiary ml-2">{row.total.shares.toLocaleString()} shares</span>
+                  </td>
+
+                  {/* Status */}
+                  <td className="px-2 py-2.5 align-middle">
+                    <span className={row.isVested ? 'text-tertiary' : 'text-ink'}>
+                      {row.isVested ? 'Vested' : 'Unvested'}
+                    </span>
+                  </td>
                 </tr>
-              )}
-              <tr className="border-b border-border-subtle">
-                <td className="px-2 py-2.5 align-middle overflow-hidden text-ellipsis">
-                  <span className="font-semibold text-ink whitespace-nowrap">{fmtDate(row.date)}</span>
-                </td>
 
-                {GRANTS.map(g => {
-                  const evt = row.perGrant[g.id]
-                  if (!evt) return (
-                    <td key={g.id} className="px-2 py-2.5 align-middle">
-                      <span className="text-border-mid">—</span>
-                    </td>
-                  )
-                  return (
-                    <td key={g.id} className="px-2 py-2.5 align-middle overflow-hidden text-ellipsis">
-                      <span className="font-semibold text-ink">{fmtMoney(Math.round(evt.shares * sharePrice))}</span>
-                      <span className="text-tertiary ml-2">{evt.shares} shares</span>
-                      <span className="text-action ml-2">{evt.quarterIndex}/16</span>
-                    </td>
-                  )
-                })}
-
-                <td className="px-2 py-2.5 align-middle whitespace-nowrap overflow-hidden text-ellipsis">
-                  <span className="font-semibold text-ink">{fmtMoney(Math.round(row.total.value))}</span>
-                  <span className="text-tertiary ml-2">{row.total.shares} shares</span>
-                </td>
-
-                <td className="px-2 py-2.5 align-middle">
-                  <span className={row.isVested ? 'text-tertiary' : 'text-ink'}>
-                    {row.isVested ? 'Vested' : 'Unvested'}
-                  </span>
-                </td>
-              </tr>
-            </React.Fragment>
-          ))}
+                {/* Expanded breakdown */}
+                <AnimatePresence initial={false}>
+                  {isExpanded && (
+                    <tr key={`${row.dateKey}-expanded`}>
+                      <td colSpan={5} className="p-0 border-b border-border-subtle">
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: 'auto', opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          transition={{ duration: 0.22, ease: [0.22, 0.03, 0.26, 1] }}
+                          style={{ overflow: 'hidden' }}
+                        >
+                          <table className="w-full border-collapse table-fixed">
+                            <colgroup>
+                              <col style={{ width: '12%' }} />
+                              <col style={{ width: '18%' }} />
+                              <col style={{ width: '34%' }} />
+                              <col style={{ width: '22%' }} />
+                              <col style={{ width: '14%' }} />
+                            </colgroup>
+                            <tbody>
+                              {row.grantEvents.map(({ grant, event }) => (
+                                <tr key={grant.id} className="bg-surface-muted border-b border-border-subtle last:border-0">
+                                  <td className="px-2 py-2 align-middle" />
+                                  <td className="px-2 py-2 align-middle" />
+                                  <td className="px-2 py-2 align-middle">
+                                    <div className="flex items-center gap-2">
+                                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: grant.color }} />
+                                      <span className="text-sm text-ink">{grant.label}, {fmtDate(grant.grantedDate)}</span>
+                                      <span className="text-xs text-tertiary">· {event.quarterIndex}/16</span>
+                                    </div>
+                                  </td>
+                                  <td className="px-2 py-2 align-middle">
+                                    <span className="text-sm font-semibold text-ink">{fmtMoney(Math.round(event.shares * sharePrice))}</span>
+                                    <span className="text-xs text-tertiary ml-2">{event.shares} shares</span>
+                                  </td>
+                                  <td className="px-2 py-2 align-middle" />
+                                </tr>
+                              ))}
+                            </tbody>
+                          </table>
+                        </motion.div>
+                      </td>
+                    </tr>
+                  )}
+                </AnimatePresence>
+              </React.Fragment>
+            )
+          })}
         </tbody>
       </table>
 

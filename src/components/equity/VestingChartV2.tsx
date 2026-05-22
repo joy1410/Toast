@@ -18,6 +18,7 @@ interface Props {
   mode: 'shares' | 'value'
   highlightGrantId: string | null
   periodMode: PeriodMode
+  onBarClick?: (quarter: string) => void
 }
 
 // Diagonal stripe CSS for vested segments (matches SVG hatch pattern)
@@ -50,7 +51,7 @@ function fmtTick(v: number, mode: 'shares' | 'value'): string {
   return v >= 1000 ? `$${+(v / 1000).toFixed(0)}K` : `$${v}`
 }
 
-export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, periodMode }: Props) {
+export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, periodMode, onBarClick }: Props) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerW, setContainerW] = useState(800)
@@ -111,7 +112,7 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
 
       {/* ── Grid lines ──────────────────────────────────────────────────────── */}
       {yTicks.map(tick => {
-        const top = CHART_PAD + (yScale(tick) as number)
+        const top = CHART_PAD + (yScale(tick) as number) - (tick === 0 ? 1 : 0)
         return (
           <div
             key={tick}
@@ -173,6 +174,7 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
                 className="flex-1 flex flex-col justify-end items-center cursor-pointer"
                 onMouseEnter={() => setHoverIdx(bi)}
                 onMouseLeave={() => setHoverIdx(null)}
+                onClick={() => onBarClick?.(bar.label)}
               >
                 {/* Segments — flex-col-reverse so index-0 is at bottom */}
                 <motion.div
@@ -187,12 +189,13 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
                   animate={{ scaleY: 1, opacity: 1 }}
                   transition={{ duration: 0.35, delay: bi * 0.025, ease: EASE }}
                 >
-                  {bar.segments.map(seg => {
+                  {bar.segments.map((seg, si) => {
                     const grant   = GRANTS.find(g => g.id === seg.grantId)!
                     const segVal  = mode === 'shares' ? seg.shares : seg.value
                     const h       = Math.max(2, CHART_H - (yScale(segVal) as number))
                     const useHatch = periodMode === 'calYear26' && seg.isVested
                     const opacity = highlightGrantId !== null && highlightGrantId !== seg.grantId ? 0.18 : 1
+                    const isBottom = si === 0
                     return (
                       <motion.div
                         key={seg.grantId}
@@ -201,7 +204,7 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
                         style={{
                           width: barW,
                           height: h,
-                          borderRadius: 3,
+                          borderRadius: isBottom ? '3px 3px 0 0' : 3,
                           background: useHatch ? hatchBg(grant.color) : grant.color,
                           flexShrink: 0,
                         }}
@@ -274,10 +277,10 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
                 >
                   <div className="w-3 h-3 rounded-sm shrink-0" style={{ background: grant.color }} />
                   <span className="text-caption-sm">{grant.label}</span>
-                  <span className="font-semibold text-caption-sm">{fmtMoney(seg.value)}</span>
                   <span className="text-caption-sm" style={{ color: 'var(--color-tooltip-muted)' }}>
                     {seg.shares} shares
                   </span>
+                  <span className="font-semibold text-caption-sm">{fmtMoney(seg.value)}</span>
                 </div>
               )
             })}

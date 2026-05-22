@@ -77,7 +77,7 @@ function GrantCard({
       </div>
 
       {/* Vested / Unvested grid — col widths are content-driven, inline grid-template required */}
-      <div className="grid text-sm" style={{ gridTemplateColumns: 'auto 1fr', columnGap: 16, rowGap: 12 }}>
+      <div className="grid text-sm" style={{ gridTemplateColumns: 'auto 1fr', columnGap: 16, rowGap: 6 }}>
         <span className="text-ink leading-5">Vested</span>
         <span className="leading-5">
           <span className="font-semibold text-ink">{fmtMoney(Math.round(vestedValue))}</span>
@@ -98,11 +98,21 @@ function GrantCard({
         onMouseEnter={() => nextVest && setShowTooltip(true)}
         onMouseLeave={() => setShowTooltip(false)}
       >
-        <div className="flex justify-between">
+        {/* Date labels row — year markers sit between first/last labels */}
+        <div className="relative flex justify-between">
           <div className="text-sm text-secondary leading-5">
             <div>First vesting</div>
             {firstVestDate && <div>{fmtDateBar(firstVestDate)}</div>}
           </div>
+          {firstVestDate && [4, 8, 12].map((qi, idx) => (
+            <span
+              key={qi}
+              className="absolute text-xs text-secondary text-center"
+              style={{ left: `${(qi / TOTAL) * 100}%`, transform: 'translateX(-50%)', bottom: 0 }}
+            >
+              {firstVestDate.getFullYear() + idx + 1}
+            </span>
+          ))}
           <div className="text-sm text-secondary leading-5 text-right">
             <div>Fully vests</div>
             {fullyVestsDate && <div>{fmtDateBar(fullyVestsDate)}</div>}

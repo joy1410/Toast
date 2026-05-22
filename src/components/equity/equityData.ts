@@ -159,6 +159,15 @@ export function computeSummary(events: VestingEvent[], sharePrice: number) {
   const next12Shares = events
     .filter(e => e.date > TODAY && e.date <= next12End)
     .reduce((s, e) => s + e.shares, 0)
+
+  // Next single vesting event across all grants
+  const futureEvents = events.filter(e => e.date > TODAY).sort((a, b) => a.date.getTime() - b.date.getTime())
+  const nextVestDate   = futureEvents[0]?.date ?? null
+  // Sum all grants vesting on that same date
+  const nextVestShares = nextVestDate
+    ? futureEvents.filter(e => e.date.getTime() === nextVestDate.getTime()).reduce((s, e) => s + e.shares, 0)
+    : 0
+
   return {
     grantCount: GRANTS.length,
     totalShares,
@@ -168,5 +177,8 @@ export function computeSummary(events: VestingEvent[], sharePrice: number) {
     unvestedValue: unvestedShares * sharePrice,
     next12Shares,
     next12Value: next12Shares * sharePrice,
+    nextVestDate,
+    nextVestShares,
+    nextVestValue: nextVestShares * sharePrice,
   }
 }

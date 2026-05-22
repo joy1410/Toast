@@ -32,6 +32,7 @@ export function EquityCard() {
   const [tab, setTab] = useState<TabMode>('schedule')
   const [highlightGrantId, setHighlightGrantId] = useState<string | null>(null)
   const [grantDropdownOpen, setGrantDropdownOpen] = useState(false)
+  const [scrollToQuarter, setScrollToQuarter] = useState<{ quarter: string; nonce: number } | null>(null)
   const grantDropdownRef = useRef<HTMLDivElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -89,19 +90,25 @@ export function EquityCard() {
     setPriceLabel(label)
   }
 
+  const nextVestLabel = summary.nextVestDate
+    ? summary.nextVestDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    : '—'
+
   const summaryCards = [
-    { label: 'Granted to date',           primary: `${summary.totalShares.toLocaleString()} shares`, badge: `${summary.grantCount} grants` },
-    { label: 'Vested to date',            primary: fmtMoney(summary.vestedValue),                    badge: `${summary.vestedShares.toLocaleString()} shares` },
-    { label: 'Unvested',                  primary: fmtMoney(summary.unvestedValue),                  badge: `${summary.unvestedShares.toLocaleString()} shares` },
-    { label: 'Vesting in next 12 months', primary: fmtMoney(summary.next12Value),                    badge: `${summary.next12Shares.toLocaleString()} shares` },
+    { label: 'Granted to date',           primary: `${summary.totalShares.toLocaleString()} shares`,  secondary: `${summary.grantCount} grants` },
+    { label: 'Vested to date',            primary: `${summary.vestedShares.toLocaleString()} shares`,  secondary: fmtMoney(Math.round(summary.vestedValue)) },
+    { label: 'Unvested',                  primary: `${summary.unvestedShares.toLocaleString()} shares`, secondary: fmtMoney(Math.round(summary.unvestedValue)) },
+    { label: 'Next 12 months vesting',    primary: `${summary.next12Shares.toLocaleString()} shares`,  secondary: fmtMoney(Math.round(summary.next12Value)) },
+    { label: 'Next vesting',              primary: nextVestLabel,                                       secondary: `${summary.nextVestShares.toLocaleString()} shares · ${fmtMoney(Math.round(summary.nextVestValue))}` },
   ]
 
   return (
     <div className="font-ui bg-background rounded-2xl w-full px-8 py-9">
       <style>{`
-        .kpi-grid { grid-template-columns: repeat(4, 1fr); }
-        @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
-        @media (max-width: 420px) { .kpi-grid { grid-template-columns: 1fr; } }
+        .kpi-grid { grid-template-columns: repeat(5, 1fr); }
+        @media (max-width: 860px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 560px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 360px) { .kpi-grid { grid-template-columns: 1fr; } }
       `}</style>
       {/* Header */}
       <p className="text-base font-semibold text-ink leading-6 mb-4 m-0">Your equity rewards</p>
@@ -111,15 +118,12 @@ export function EquityCard() {
         {summaryCards.map(card => (
           <div
             key={card.label}
-            className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-6"
+            className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-3"
           >
             <p className="text-base font-normal text-ink leading-6 m-0">{card.label}</p>
-            <div className="flex items-center gap-2">
-              <span className="text-lg font-normal text-ink whitespace-nowrap">{card.primary}</span>
-              {/* Badge: overline style — 12px, tracking-badge, uppercase */}
-              <span className="bg-surface-muted border border-border rounded-full px-3 py-0.5 text-xs font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
-                {card.badge}
-              </span>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-lg font-semibold text-ink">{card.primary}</span>
+              <span className="text-sm text-secondary">{card.secondary}</span>
             </div>
           </div>
         ))}
@@ -382,6 +386,7 @@ export function EquityCard() {
                 mode={displayMode}
                 highlightGrantId={highlightGrantId}
                 periodMode={periodMode}
+                onBarClick={q => setScrollToQuarter({ quarter: q, nonce: Date.now() })}
               />
             </div>
 
@@ -392,6 +397,8 @@ export function EquityCard() {
                 sharePrice={sharePrice}
                 defaultStart={tableStart}
                 defaultEnd={tableEnd}
+                scrollToQuarter={scrollToQuarter?.quarter ?? null}
+                scrollNonce={scrollToQuarter?.nonce ?? 0}
               />
             </div>
           </motion.div>
