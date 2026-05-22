@@ -169,7 +169,7 @@ export function EquityCard() {
 
       {/* Tabs */}
       <div className="flex border-b border-border-mid mb-6">
-        {([['schedule', 'Vesting schedule'], ['grants', 'Grants']] as const).map(([key, label]) => (
+        {([['schedule', 'Vesting'], ['grants', 'Grants']] as const).map(([key, label]) => (
           <button
             key={key}
             onClick={() => setTab(key)}
