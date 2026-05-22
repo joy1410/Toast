@@ -98,11 +98,16 @@ export function EquityCard() {
 
   return (
     <div className="font-ui bg-background rounded-2xl w-full px-8 py-9">
+      <style>{`
+        .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 700px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 420px) { .kpi-grid { grid-template-columns: 1fr; } }
+      `}</style>
       {/* Header */}
       <p className="text-base font-semibold text-ink leading-6 mb-4 m-0">Your equity rewards</p>
 
       {/* Summary cards */}
-      <div className="grid gap-2.5 mb-2" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(min-content, 1fr))' }}>
+      <div className="kpi-grid grid gap-2.5 mb-2">
         {summaryCards.map(card => (
           <div
             key={card.label}
