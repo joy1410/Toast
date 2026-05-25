@@ -1,5 +1,9 @@
 export const TODAY = new Date('2026-09-04')
 
+export type PeriodMode  = 'next12' | 'calYear26' | 'allFuture'
+export type DisplayMode = 'shares' | 'value'
+export type TabMode     = 'schedule' | 'grants'
+
 export type GrantType = 'new-hire' | 'promotion' | 'merit'
 
 export interface Grant {

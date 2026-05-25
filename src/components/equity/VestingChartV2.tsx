@@ -2,15 +2,13 @@
 import { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import { scaleLinear } from '@visx/scale'
-import { GRANTS, QuarterBar, fmtMoney, TODAY } from './equityData'
+import { GRANTS, QuarterBar, fmtMoney, TODAY, type PeriodMode } from './equityData'
 
 const CHART_H    = 180
 const CHART_PAD  = 24   // top padding above bars (room for TODAY chip)
 const LABEL_W    = 48
 const BAR_MAX_W  = 96
 const EASE: [number, number, number, number] = [0.22, 0.03, 0.26, 1]
-
-type PeriodMode = 'next12' | 'calYear26' | 'allFuture'
 
 interface Props {
   bars: QuarterBar[]
