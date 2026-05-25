@@ -62,7 +62,9 @@ function buildRows(events: VestingEvent[], sharePrice: number, start: Date, end:
 export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scrollToQuarter, scrollNonce = 0 }: Props) {
   const [showAll, setShowAll] = useState(false)
   const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [highlightedQuarter, setHighlightedQuarter] = useState<string | null>(null)
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map())
+  const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   const allRowsInPeriod = buildRows(events, sharePrice, defaultStart, defaultEnd)
   const allRowsFull     = buildRows(events, sharePrice, defaultStart, new Date(8640000000000000))
@@ -71,7 +73,6 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
   // Scroll to quarter when chart bar is clicked
   useEffect(() => {
     if (!scrollToQuarter) return
-    // If the quarter isn't in the default window, expand to show all rows first
     const inDefault = allRowsInPeriod.some(r => r.quarter === scrollToQuarter)
     if (!inDefault) setShowAll(true)
   }, [scrollToQuarter, scrollNonce])
@@ -81,10 +82,13 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
     const rows = showAll ? allRowsFull : allRowsInPeriod
     const row = rows.find(r => r.quarter === scrollToQuarter)
     if (!row) return
-    // Wait one frame for showAll to re-render before scrolling
     requestAnimationFrame(() => {
       const el = rowRefs.current.get(row.dateKey)
       if (el) el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      // Highlight all rows for this quarter then fade out
+      if (highlightTimerRef.current) clearTimeout(highlightTimerRef.current)
+      setHighlightedQuarter(scrollToQuarter)
+      highlightTimerRef.current = setTimeout(() => setHighlightedQuarter(null), 1800)
     })
   }, [scrollToQuarter, scrollNonce, showAll])
 
@@ -98,6 +102,15 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
 
   return (
     <div className="w-full font-ui">
+      <style>{`
+        @keyframes row-highlight-fade {
+          0%   { background-color: var(--color-bg-info-subtle); }
+          100% { background-color: transparent; }
+        }
+        .row-highlight {
+          animation: row-highlight-fade 1.8s ease-out forwards;
+        }
+      `}</style>
       <table className="w-full border-collapse text-sm table-fixed">
         <colgroup>
           <col style={{ width: '12%' }} />
@@ -143,7 +156,7 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                 {/* Main row — highlighted when expanded */}
                 <tr
                   ref={el => { if (el) rowRefs.current.set(row.dateKey, el) }}
-                  className={`border-b border-border-subtle cursor-pointer transition-colors ${isExpanded ? 'bg-surface-muted' : 'hover:bg-surface-muted'}`}
+                  className={`border-b border-border-subtle cursor-pointer transition-colors ${isExpanded ? 'bg-surface-muted' : 'hover:bg-surface-muted'} ${highlightedQuarter === row.quarter ? 'row-highlight' : ''}`}
                   onClick={() => toggleRow(row.dateKey)}
                 >
                   {/* Quarter */}

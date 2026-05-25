@@ -457,10 +457,10 @@ interface PriceEditorProps {
 
 function PriceEditor({ defaultPrice, currentPrice, inputPrice, inputRef, onInputChange, onApply, onSelectPreset, onHide }: PriceEditorProps) {
   const presets = [
-    { label: '20 day avg',          description: `20 day average as on ${PRICE_DATE}`,  price: defaultPrice },
-    { label: '+ 5% yearly growth',  description: '+5% yearly growth over 20 day avg',  price: Math.round(defaultPrice * 1.05 * 100) / 100 },
-    { label: '+ 10% yearly growth', description: '+10% yearly growth over 20 day avg', price: Math.round(defaultPrice * 1.10 * 100) / 100 },
-    { label: '+ 20% yearly growth', description: '+20% yearly growth over 20 day avg', price: Math.round(defaultPrice * 1.20 * 100) / 100 },
+    { label: '20 day avg',  description: `20 day average as on ${PRICE_DATE}`,  price: defaultPrice },
+    { label: '+ 5% growth',  description: '+5% over 20 day avg',  price: Math.round(defaultPrice * 1.05 * 100) / 100 },
+    { label: '+ 10% growth', description: '+10% over 20 day avg', price: Math.round(defaultPrice * 1.10 * 100) / 100 },
+    { label: '+ 20% growth', description: '+20% over 20 day avg', price: Math.round(defaultPrice * 1.20 * 100) / 100 },
   ]
 
   return (

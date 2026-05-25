@@ -21,7 +21,7 @@ import { resolve, dirname } from 'path'
 import { fileURLToPath } from 'url'
 
 // Import palette and standalone token files directly (no cross-file imports needed)
-import { gray, opacityBlack, orange, blue } from '../Toast_tokens/palette.ts'
+import { gray, opacityBlack, orange, blue, sky } from '../Toast_tokens/palette.ts'
 import { radii } from '../Toast_tokens/radii.ts'
 import { shadows } from '../Toast_tokens/shadows.ts'
 
@@ -110,8 +110,13 @@ block('Semantic surfaces — colors.ts › backgroundColors + surfaceColors', {
   'color-surface-neutral':  '#888888',           // vested/unvested mixed swatch — no palette entry
 })
 
-// ── 7. Tooltip surfaces ───────────────────────────────────────────────────────
-block('Tooltip surfaces', {
+// ── 7. Info surfaces (sky palette) ───────────────────────────────────────────
+block('Info surfaces — palette.ts › sky', {
+  'color-bg-info-subtle': sky['0'],   // #E3F0FB — row highlight, info backgrounds
+})
+
+// ── 8. Tooltip surfaces (renumbered) ─────────────────────────────────────────
+block('Tooltip surfaces — chart + grants', {
   'color-tooltip':        'rgba(0,0,0,0.82)',          // GrantsTab tooltip bg
   'color-tooltip-chart':  'rgba(0,0,0,0.78)',          // VestingChart hover tooltip bg
   'color-tooltip-muted':  'rgba(255,255,255,0.70)',    // secondary text inside dark tooltip

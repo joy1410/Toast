@@ -110,7 +110,7 @@ function GrantCard({
               className="absolute text-xs text-secondary text-center"
               style={{ left: `${(qi / TOTAL) * 100}%`, transform: 'translateX(-50%)', bottom: 0 }}
             >
-              {firstVestDate.getFullYear() + idx + 1}
+              {['1st year', '2nd year', '3rd year'][idx]}
             </span>
           ))}
           <div className="text-sm text-secondary leading-5 text-right">
