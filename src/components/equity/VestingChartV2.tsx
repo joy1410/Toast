@@ -267,7 +267,7 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
               <span>{totalShares.toLocaleString()} shares</span>
               <span>{fmtMoney(totalValue)}</span>
             </div>
-            {visibleSegs.map(seg => {
+            {[...visibleSegs].reverse().map(seg => {
               const grant = GRANTS.find(g => g.id === seg.grantId)!
               return (
                 <div

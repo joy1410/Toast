@@ -94,72 +94,52 @@ export function EquityCard() {
     ? summary.nextVestDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
     : '—'
 
+  const vestedPct   = Math.round((summary.vestedShares / summary.totalShares) * 100)
+  const unvestedPct = 100 - vestedPct
+
   const summaryCards = [
-    { label: 'Granted to date',           primary: `${summary.totalShares.toLocaleString()} shares`,  secondary: `${summary.grantCount} grants` },
-    { label: 'Vested to date',            primary: `${summary.vestedShares.toLocaleString()} shares`,  secondary: fmtMoney(Math.round(summary.vestedValue)) },
-    { label: 'Unvested',                  primary: `${summary.unvestedShares.toLocaleString()} shares`, secondary: fmtMoney(Math.round(summary.unvestedValue)) },
-    { label: 'Next 12 months vesting',    primary: `${summary.next12Shares.toLocaleString()} shares`,  secondary: fmtMoney(Math.round(summary.next12Value)) },
-    { label: 'Next vesting',              primary: nextVestLabel,                                       secondary: `${summary.nextVestShares.toLocaleString()} shares · ${fmtMoney(Math.round(summary.nextVestValue))}` },
+    { label: 'Granted to date',        primary: `${summary.totalShares.toLocaleString()} shares`,   secondary: `${summary.grantCount} grants` },
+    { label: 'Vested to date',         primary: `${summary.vestedShares.toLocaleString()} shares`,   secondary: fmtMoney(Math.round(summary.vestedValue)),   chip: `${vestedPct}%` },
+    { label: 'Unvested',               primary: `${summary.unvestedShares.toLocaleString()} shares`,  secondary: fmtMoney(Math.round(summary.unvestedValue)),  chip: `${unvestedPct}%` },
+    { label: 'Next 12 months vesting', primary: `${summary.next12Shares.toLocaleString()} shares`,   secondary: fmtMoney(Math.round(summary.next12Value)) },
+    // { label: 'Next vesting',           primary: nextVestLabel,                                        secondary: `${summary.nextVestShares.toLocaleString()} shares · ${fmtMoney(Math.round(summary.nextVestValue))}` },
   ]
 
   return (
     <div className="font-ui bg-background rounded-2xl w-full px-8 py-9">
       <style>{`
-        .kpi-grid { grid-template-columns: repeat(5, 1fr); }
-        @media (max-width: 860px) { .kpi-grid { grid-template-columns: repeat(3, 1fr); } }
-        @media (max-width: 560px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
+        .kpi-grid { grid-template-columns: repeat(4, 1fr); }
+        @media (max-width: 720px) { .kpi-grid { grid-template-columns: repeat(2, 1fr); } }
         @media (max-width: 360px) { .kpi-grid { grid-template-columns: 1fr; } }
       `}</style>
       {/* Header */}
-      <p className="text-base font-semibold text-ink leading-6 mb-4 m-0">Your equity rewards</p>
-
-      {/* Summary cards */}
-      <div className="kpi-grid grid gap-2.5 mb-2">
-        {summaryCards.map(card => (
-          <div
-            key={card.label}
-            className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-3"
-          >
-            <p className="text-base font-normal text-ink leading-6 m-0">{card.label}</p>
-            <div className="flex flex-col gap-0.5">
-              <span className="text-lg font-semibold text-ink">{card.primary}</span>
-              <span className="text-sm text-secondary">{card.secondary}</span>
-            </div>
-          </div>
-        ))}
-      </div>
+      <p className="text-base font-semibold text-ink leading-6 m-0">Your equity rewards</p>
 
       {/* Share price row */}
       <div className="mb-4">
-        <AnimatePresence mode="wait">
-          {!showPriceEditor ? (
-            <motion.div
-              key="price-display"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="flex items-center h-9"
+        <div className="flex items-center h-9">
+          <span className="text-base text-secondary">
+            Calculated based on share price of{' '}
+            <span className="text-ink">${sharePrice.toFixed(2)}</span>
+            , {priceLabel}
+          </span>
+          {!showPriceEditor && (
+            <button
+              onClick={() => { setShowPriceEditor(true); setInputPrice('') }}
+              className="bg-transparent border-0 cursor-pointer text-action text-base font-normal px-2 font-ui"
             >
-              <span className="text-base text-secondary">
-                Calculated based on share price of{' '}
-                <span className="text-ink">${sharePrice.toFixed(2)}</span>
-                , {priceLabel}
-              </span>
-              <button
-                onClick={() => { setShowPriceEditor(true); setInputPrice('') }}
-                className="bg-transparent border-0 cursor-pointer text-action text-base font-normal px-2 font-ui"
-              >
-                Change
-              </button>
-            </motion.div>
-          ) : (
+              Change
+            </button>
+          )}
+        </div>
+        <AnimatePresence>
+          {showPriceEditor && (
             <motion.div
-              key="price-editor"
-              initial={{ opacity: 0, y: -6 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: -6 }}
-              transition={{ duration: 0.2, ease: [0.22, 0.03, 0.26, 1] }}
+              initial={{ opacity: 0, height: 0 }}
+              animate={{ opacity: 1, height: 'auto' }}
+              exit={{ opacity: 0, height: 0 }}
+              transition={{ duration: 0.3, ease: [0.22, 0.03, 0.26, 1] }}
+              style={{ overflow: 'hidden' }}
             >
               <PriceEditor
                 defaultPrice={DEFAULT_PRICE}
@@ -176,12 +156,35 @@ export function EquityCard() {
         </AnimatePresence>
       </div>
 
+      {/* Summary cards */}
+      <div className="kpi-grid grid gap-2.5 mb-2">
+        {summaryCards.map(card => (
+          <div
+            key={card.label}
+            className="bg-surface-card border border-border rounded-xl p-4 flex flex-col gap-3"
+          >
+            <div className="flex items-center gap-2">
+              <p className="text-base font-normal text-ink leading-6 m-0">{card.label}</p>
+              {'chip' in card && (
+                <span className="bg-surface-muted border border-border rounded-full px-2.5 py-0.5 text-caption-sm font-semibold text-ink uppercase tracking-overline whitespace-nowrap">
+                  {card.chip}
+                </span>
+              )}
+            </div>
+            <div className="flex flex-col gap-0.5">
+              <span className="text-lg font-semibold text-ink">{card.primary}</span>
+              <span className="text-sm text-secondary">{card.secondary}</span>
+            </div>
+          </div>
+        ))}
+      </div>
+
       {/* Tabs */}
       <div className="flex border-b border-border-mid mb-6">
         {([['schedule', 'Vesting'], ['grants', 'Grants']] as const).map(([key, label]) => (
           <button
             key={key}
-            onClick={() => setTab(key)}
+            onClick={() => { setTab(key); setScrollToQuarter(null) }}
             className={`relative bg-transparent border-0 cursor-pointer px-2 pt-3 pb-3 text-base font-ui -mb-px ${tab === key ? 'font-semibold text-ink' : 'font-normal text-secondary'}`}
           >
             {label}
@@ -189,7 +192,7 @@ export function EquityCard() {
               <motion.div
                 layoutId="tab-underline"
                 className="absolute bottom-0 left-0 right-0 h-[3px] bg-brand rounded-t-sm"
-                transition={{ type: 'spring', stiffness: 500, damping: 40 }}
+                transition={{ duration: 0.25, ease: [0.22, 0.03, 0.26, 1] }}
               />
             )}
           </button>
@@ -414,6 +417,7 @@ export function EquityCard() {
 
             {/* Table */}
             <div className="bg-background">
+              <p className="text-base font-semibold text-ink mb-3">Your vesting schedule, 2026 onwards</p>
               <VestingTable
                 events={allEvents}
                 sharePrice={sharePrice}

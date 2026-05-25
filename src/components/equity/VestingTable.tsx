@@ -61,7 +61,7 @@ function buildRows(events: VestingEvent[], sharePrice: number, start: Date, end:
 
 export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scrollToQuarter, scrollNonce = 0 }: Props) {
   const [showAll, setShowAll] = useState(false)
-  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set())
+  const [expandedRow, setExpandedRow] = useState<string | null>(null)
   const [highlightedQuarter, setHighlightedQuarter] = useState<string | null>(null)
   const rowRefs = useRef<Map<string, HTMLTableRowElement>>(new Map())
   const highlightTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
@@ -93,11 +93,7 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
   }, [scrollToQuarter, scrollNonce, showAll])
 
   function toggleRow(dateKey: string) {
-    setExpandedRows(prev => {
-      const next = new Set(prev)
-      next.has(dateKey) ? next.delete(dateKey) : next.add(dateKey)
-      return next
-    })
+    setExpandedRow(prev => prev === dateKey ? null : dateKey)
   }
 
   return (
@@ -132,7 +128,7 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
 
         <tbody>
           {visibleRows.map((row) => {
-            const isExpanded = expandedRows.has(row.dateKey)
+            const isExpanded = expandedRow === row.dateKey
             const grantCount = row.grantEvents.length
 
             return (
@@ -176,7 +172,7 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                         {/* Color circles — hidden when expanded */}
                         {!isExpanded && (
                           <div className="flex gap-1 shrink-0">
-                            {row.grantEvents.map(({ grant }) => (
+                            {[...row.grantEvents].reverse().map(({ grant }) => (
                               <span
                                 key={grant.id}
                                 className="w-2.5 h-2.5 rounded-full shrink-0"
@@ -237,7 +233,7 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                               <col style={{ width: '14%' }} />
                             </colgroup>
                             <tbody>
-                              {row.grantEvents.map(({ grant, event }) => (
+                              {[...row.grantEvents].reverse().map(({ grant, event }) => (
                                 <tr key={grant.id} className="bg-surface-muted border-b border-border-subtle last:border-0">
                                   <td className="px-2 py-2 align-middle" />
                                   <td className="px-2 py-2 align-middle" />
