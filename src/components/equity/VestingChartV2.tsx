@@ -51,6 +51,7 @@ function fmtTick(v: number, mode: 'shares' | 'value'): string {
 
 export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, periodMode, onBarClick }: Props) {
   const [hoverIdx, setHoverIdx] = useState<number | null>(null)
+  const [mouseY, setMouseY] = useState(0)
   const containerRef = useRef<HTMLDivElement>(null)
   const [containerW, setContainerW] = useState(800)
 
@@ -82,7 +83,15 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
   const totalH   = CHART_PAD + CHART_H + 28
 
   return (
-    <div ref={containerRef} className="w-full relative z-0" style={{ height: totalH }}>
+    <div
+      ref={containerRef}
+      className="w-full relative z-0"
+      style={{ height: totalH }}
+      onMouseMove={e => {
+        const rect = containerRef.current?.getBoundingClientRect()
+        if (rect) setMouseY(e.clientY - rect.top)
+      }}
+    >
 
       {/* ── Y-axis labels ───────────────────────────────────────────────────── */}
       {yTicks.map(tick => {
@@ -139,11 +148,18 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
             {bars.map((bar, bi) => (
               <div
                 key={bar.label}
-                className="flex-1 flex flex-col justify-end items-center cursor-pointer"
+                className="flex-1 flex flex-col justify-end items-center cursor-pointer relative"
                 onMouseEnter={() => setHoverIdx(bi)}
                 onMouseLeave={() => setHoverIdx(null)}
                 onClick={() => onBarClick?.(bar.label)}
               >
+                {/* Hover column highlight */}
+                {hoverIdx === bi && (
+                  <div
+                    className="absolute inset-0 rounded-sm pointer-events-none"
+                    style={{ background: 'var(--color-black-4)' }}
+                  />
+                )}
                 {/* Segments — flex-col-reverse so index-0 is at bottom */}
                 <motion.div
                   style={{
@@ -246,6 +262,8 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
         const barX        = LABEL_W + hoverIdx * slotW + barOff
         const tipW        = 240
         const left        = barX + barW + 8 + tipW > containerW ? barX - tipW - 8 : barX + barW + 8
+        // Clamp tooltip vertically so it stays within chart area
+        const tipTop      = Math.min(Math.max(mouseY - 20, CHART_PAD), CHART_PAD + CHART_H - 40)
         return (
           <motion.div
             initial={{ opacity: 0, scale: 0.95 }}
@@ -253,7 +271,7 @@ export function VestingChartV2({ bars, sharePrice, mode, highlightGrantId, perio
             transition={{ duration: 0.12 }}
             className="absolute pointer-events-none z-10 rounded font-ui text-background"
             style={{
-              top: CHART_PAD,
+              top: tipTop,
               left,
               width: tipW,
               background: 'var(--color-tooltip-chart)',
