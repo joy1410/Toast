@@ -86,7 +86,7 @@ function GrantCard({
         </span>
         <span className="text-ink leading-5">Unvested</span>
         <span className="leading-5">
-          <span className="font-semibold text-ink">{fmtMoney(Math.round(unvestedValue))} (Est.)</span>
+          <span className="font-semibold text-ink">{fmtMoney(Math.round(unvestedValue))}</span>
           <span className="text-ink"> · </span>
           <span className="text-secondary">{unvestedShares.toLocaleString()} shares</span>
         </span>
