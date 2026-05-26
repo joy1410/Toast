@@ -157,12 +157,12 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                 >
                   {/* Quarter */}
                   <td className="pl-4 pr-2 py-2.5 align-middle">
-                    <span className="text-ink">{row.quarter}</span>
+                    <span className={row.isVested ? 'text-secondary' : 'text-ink'}>{row.quarter}</span>
                   </td>
 
                   {/* Vesting date */}
                   <td className="px-2 py-2.5 align-middle">
-                    <span className="font-semibold text-ink">{fmtDate(row.date)}</span>
+                    <span className={`font-semibold ${row.isVested ? 'text-secondary' : 'text-ink'}`}>{fmtDate(row.date)}</span>
                   </td>
 
                   {/* Grants summary */}
@@ -241,12 +241,12 @@ export function VestingTable({ events, sharePrice, defaultStart, defaultEnd, scr
                                     <div className="flex items-center gap-2">
                                       <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: grant.color }} />
                                       <span className="text-sm text-ink">{grant.label}, {fmtDate(grant.grantedDate)}</span>
-                                      <span className="text-xs text-tertiary">· {event.quarterIndex}/16</span>
+                                      <span className="text-sm text-tertiary">· {event.quarterIndex}/16</span>
                                     </div>
                                   </td>
                                   <td className="px-2 py-2 align-middle">
                                     <span className="text-sm font-semibold text-ink">{fmtMoney(Math.round(event.shares * sharePrice))}</span>
-                                    <span className="text-xs text-tertiary ml-2">{event.shares} shares</span>
+                                    <span className="text-sm text-tertiary ml-2">{event.shares} shares</span>
                                   </td>
                                   <td className="px-2 py-2 align-middle" />
                                 </tr>
